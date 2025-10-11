@@ -7,7 +7,7 @@ public class Item
 {
   [Key]
   public int ID { get; set; }
-  public int ID_tipo { get; set; }
+  // public int ID_tipo { get; set; }
 
   // esperando o tipo ser feito
   // [ForeignKey("ID_tipo")]
