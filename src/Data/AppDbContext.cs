@@ -11,5 +11,6 @@ namespace API.Data
     public DbSet<Requisicao> Requisicoes { get; set; }
     // public DbSet<Item> Itens { get; set; }
     public DbSet<Tipo> Tipos { get; set; }
+    public DbSet<Usuario> Usuarios { get; set; }
   }
 }

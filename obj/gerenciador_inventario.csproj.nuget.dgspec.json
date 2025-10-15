@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\taina\\OneDrive\\Documentos\\documentos\\c#\\desenvolvimento-software-visual\\gerenciador_inventario.csproj": {}
+    "C:\\Users\\yasmi\\OneDrive\\facul\\C#\\desenvolvimento-software-visual\\gerenciador_inventario.csproj": {}
   },
   "projects": {
-    "C:\\Users\\taina\\OneDrive\\Documentos\\documentos\\c#\\desenvolvimento-software-visual\\gerenciador_inventario.csproj": {
+    "C:\\Users\\yasmi\\OneDrive\\facul\\C#\\desenvolvimento-software-visual\\gerenciador_inventario.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\taina\\OneDrive\\Documentos\\documentos\\c#\\desenvolvimento-software-visual\\gerenciador_inventario.csproj",
+        "projectUniqueName": "C:\\Users\\yasmi\\OneDrive\\facul\\C#\\desenvolvimento-software-visual\\gerenciador_inventario.csproj",
         "projectName": "gerenciador_inventario",
-        "projectPath": "C:\\Users\\taina\\OneDrive\\Documentos\\documentos\\c#\\desenvolvimento-software-visual\\gerenciador_inventario.csproj",
-        "packagesPath": "C:\\Users\\taina\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\taina\\OneDrive\\Documentos\\documentos\\c#\\desenvolvimento-software-visual\\obj\\",
+        "projectPath": "C:\\Users\\yasmi\\OneDrive\\facul\\C#\\desenvolvimento-software-visual\\gerenciador_inventario.csproj",
+        "packagesPath": "C:\\Users\\yasmi\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\yasmi\\OneDrive\\facul\\C#\\desenvolvimento-software-visual\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\taina\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\yasmi\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
