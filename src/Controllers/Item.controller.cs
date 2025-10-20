@@ -24,8 +24,7 @@ namespace API.Controllers
       public async Task<ActionResult<IEnumerable<Item>>> GetItens()
       {
         var itens = await _context.Itens
-          // .Include(i => i.tipo)
-          // .Include(i => i.tipo)
+          .Include(i => i.Tipo)
           .ToListAsync();
 
         return Ok(itens);
@@ -39,7 +38,7 @@ namespace API.Controllers
     public async Task<ActionResult<Item>> GetItem(int id)
       {
         var item = await _context.Itens
-          // .Include(i => i.Tipo)
+          .Include(i => i.Tipo)
           .FirstOrDefaultAsync(i => i.ID == id);
 
         if (item == null)
@@ -55,9 +54,9 @@ namespace API.Controllers
     public async Task<ActionResult<Item>> CriarItem(Item item)
     {
       // valida se o tipo existe
-      // var tipoExiste = await _context.Tipos.AnyAsync(t => t.ID == item.ID_tipo);
-      // if (!tipoExiste)
-      //     return BadRequest(new { message = "Tipo informado não existe." });
+      var tipoExiste = await _context.Tipos.AnyAsync(t => t.ID == item.ID_tipo);
+      if (!tipoExiste)
+          return BadRequest(new { message = "Tipo informado não existe." });
 
       _context.Itens.Add(item);
       await _context.SaveChangesAsync();
@@ -83,7 +82,7 @@ namespace API.Controllers
       itemExistente.Nome = item.Nome;
       itemExistente.Descricao = item.Descricao;
       itemExistente.Valor = item.Valor;
-      // itemExistente.ID_Tipo = item.ID_Tipo;
+      itemExistente.ID_tipo = item.ID_tipo;
 
       await _context.SaveChangesAsync();
 
