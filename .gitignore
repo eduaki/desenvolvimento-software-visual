@@ -16,6 +16,7 @@
 
 */Debug/*
 */obj/Debug/*
+*.sql
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

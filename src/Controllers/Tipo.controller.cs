@@ -11,10 +11,10 @@ namespace API.Controllers
   {
     private readonly AppDbContext _context;
 
-    public TiposController(AppDbContext context)
-      {
-        _context = context;
-      }
+public TiposController(AppDbContext context)
+    {
+      _context = context;
+    }
 
     // GET: api/tipos
     [HttpGet]
@@ -49,11 +49,15 @@ namespace API.Controllers
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<Tipo>> CriarTipo(Tipo tipo)
     {
+
+      if (tipo.Nome == "" || tipo.Nome == null) 
+        return BadRequest(new { message = "O campo 'Nome' é Obrigatório" });
+
       // valida se o tipo existe
       var tipoExiste = await _context.Tipos.AnyAsync(t => t.Nome == tipo.Nome);
-      if (tipoExiste)
+      var idTipoExistente = await _context.Tipos.AnyAsync(t => t.ID == tipo.ID);
+      if (tipoExiste || idTipoExistente)
         return BadRequest(new { message = "Tipo informado já cadastrado." });
-      
 
       _context.Tipos.Add(tipo);
       await _context.SaveChangesAsync();
@@ -87,17 +91,26 @@ namespace API.Controllers
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeletarTipo(int id)
     {
+      var tipoEmUso = await _context.Itens.AnyAsync(item => item.ID_tipo == id); 
+      if (tipoEmUso)
+      {
+        return BadRequest(new { message = "Este tipo está sendo usado por um item e não pode ser excluído." });
+      }
+
       var tipo = await _context.Tipos.FindAsync(id);
       if (tipo == null)
+      {
         return NotFound(new { message = "Tipo não encontrado." });
-
+      }
+      
       _context.Tipos.Remove(tipo);
-      await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
 
-      return Ok();
+      return Ok(new {message = "Tipo deletado com sucesso"}); 
     }
   }
 }

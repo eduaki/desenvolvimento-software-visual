@@ -100,10 +100,16 @@ namespace API.Controllers
       if (item == null)
         return NotFound(new { message = "Item não encontrado." });
 
+      var itemUso = await _context.Requisicoes.AnyAsync(req => req.Item == item);
+
+      if (itemUso) return BadRequest(new { 
+        message = "O item selecionado está em uso em uma requisição" 
+      });
+
       _context.Itens.Remove(item);
       await _context.SaveChangesAsync();
 
-      return NoContent();
+      return Ok(new {message = "Item deletado com sucesso!"});
     }
   }
 }
