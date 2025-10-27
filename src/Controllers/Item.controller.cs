@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API.Data;
 using API.Models;
+using API.Controllers.dto;
 
 namespace API.Controllers
 {
@@ -51,17 +52,29 @@ namespace API.Controllers
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<Item>> CriarItem(Item item)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Item>> CriarItem([FromBody] ItemRequest request) 
     {
-      // valida se o tipo existe
-      var tipoExiste = await _context.Tipos.AnyAsync(t => t.ID == item.ID_tipo);
+      var tipoExiste = await _context.Tipos.AnyAsync(t => t.ID == request.ID_tipo);
       if (!tipoExiste)
-          return BadRequest(new { message = "Tipo informado não existe." });
+        return BadRequest(new { message = "Tipo informado não existe." });
 
-      _context.Itens.Add(item);
+      var newItem = new Item
+      {
+        ID_tipo = request.ID_tipo,
+        Nome = request.Nome,
+        Descricao = request.Descricao,
+        Valor = request.Valor
+      };
+
+      _context.Itens.Add(newItem);
       await _context.SaveChangesAsync();
 
-      return CreatedAtAction(nameof(GetItem), new { id = item.ID }, item);
+      return CreatedAtAction(nameof(GetItem), new
+      {
+        Id = newItem.ID,
+      },newItem);
+
     }
 
     // PUT: api/itens/{id}
@@ -69,14 +82,15 @@ namespace API.Controllers
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> AtualizarItem(int id, Item item)
+    public async Task<IActionResult> AtualizarItem(int id, ItemRequest item)
     {
-      if (id != item.ID)
-        return BadRequest(new { message = "ID do item não corresponde ao parâmetro." });
-
       var itemExistente = await _context.Itens.FindAsync(id);
       if (itemExistente == null)
         return NotFound(new { message = "Item não encontrado." });
+
+      var tipoExiste = await _context.Tipos.AnyAsync(t => t.ID == item.ID_tipo);
+      if (!tipoExiste)
+        return BadRequest(new { message = "Tipo informado não existe." });
 
       // Atualiza campos
       itemExistente.Nome = item.Nome;
