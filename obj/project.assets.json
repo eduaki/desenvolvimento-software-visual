@@ -1817,24 +1817,31 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\edual\\.nuget\\packages\\": {}
+    "C:\\Users\\genesis\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\edual\\OneDrive\\Documentos\\faculdade\\trabalhos\\trabalhoC#\\gerenciador_inventario\\gerenciador_inventario.csproj",
+      "projectUniqueName": "C:\\Users\\genesis\\Desktop\\desenvolvimento-software-visual\\gerenciador_inventario.csproj",
       "projectName": "gerenciador_inventario",
-      "projectPath": "C:\\Users\\edual\\OneDrive\\Documentos\\faculdade\\trabalhos\\trabalhoC#\\gerenciador_inventario\\gerenciador_inventario.csproj",
-      "packagesPath": "C:\\Users\\edual\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\edual\\OneDrive\\Documentos\\faculdade\\trabalhos\\trabalhoC#\\gerenciador_inventario\\obj\\",
+      "projectPath": "C:\\Users\\genesis\\Desktop\\desenvolvimento-software-visual\\gerenciador_inventario.csproj",
+      "packagesPath": "C:\\Users\\genesis\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\genesis\\Desktop\\desenvolvimento-software-visual\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\edual\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\genesis\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
