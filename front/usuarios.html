@@ -1,5 +1,199 @@
-<html>
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Gerenciar Usuários</title>
+		<link rel="stylesheet" href="./styles/usuarios.css" />
+	</head>
 	<body>
-		<h1>usuarios</h1>
+		<div class="layout">
+			<!-- Sidebar -->
+			<aside class="sidebar">
+				<h2>Inventário</h2>
+				<nav>
+					<a href="index.html">Dashboard</a>
+					<a href="itens.html">Itens</a>
+					<a class="active" href="usuarios.html">Usuários</a>
+					<a href="tipos.html">Tipos</a>
+					<a href="requisicoes.html">Requisições</a>
+				</nav>
+			</aside>
+
+			<!-- Conteúdo principal -->
+			<main class="content">
+				<header>
+					<h1>Usuários</h1>
+					<button class="primary-btn" id="btnNovoUsuario">
+						+ Novo Usuário
+					</button>
+				</header>
+
+				<table class="table" id="usuariosTable">
+					<thead>
+						<tr>
+							<th>Ações</th>
+							<th>ID</th>
+							<th>Nome</th>
+							<th>CPF</th>
+							<th>Área</th>
+							<th>Email</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</main>
+		</div>
+
+		<!-- Modal Usuário -->
+		<div class="modal hidden" id="usuarioModal">
+			<div class="modal-content">
+				<h2 id="modalTitulo">Novo Usuário</h2>
+
+				<input type="text" id="nome" placeholder="Nome" />
+				<input type="text" id="cpf" placeholder="CPF" />
+				<input type="text" id="area" placeholder="Área" />
+				<input type="text" id="endereco" placeholder="Endereço" />
+				<input type="text" id="telefone" placeholder="Telefone" />
+				<input type="email" id="email" placeholder="Email" />
+				<input
+					type="date"
+					id="dataNascimento"
+					placeholder="Data de Nascimento" />
+
+				<div class="modal-actions">
+					<button class="secondary-btn" id="cancelarBtn">Cancelar</button>
+					<button class="primary-btn" id="salvarBtn">Salvar</button>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			const API_URL = "http://localhost:5116/api/Usuarios";
+
+			const modal = document.getElementById("usuarioModal");
+			const btnNovoUsuario = document.getElementById("btnNovoUsuario");
+			const cancelarBtn = document.getElementById("cancelarBtn");
+			const salvarBtn = document.getElementById("salvarBtn");
+			const tabela = document.querySelector("#usuariosTable tbody");
+
+			let editandoId = null;
+
+			// Abrir modal
+			btnNovoUsuario.onclick = () => abrirModal();
+			cancelarBtn.onclick = () => fecharModal();
+
+			function abrirModal(usuario = null) {
+				modal.classList.remove("hidden");
+
+				if (usuario) {
+					document.getElementById("modalTitulo").innerText = "Editar Usuário";
+					editandoId = usuario.id;
+
+					document.getElementById("nome").value = usuario.nome;
+					document.getElementById("cpf").value = usuario.cpf;
+					document.getElementById("area").value = usuario.area;
+					document.getElementById("endereco").value = usuario.endereco;
+					document.getElementById("telefone").value = usuario.telefone;
+					document.getElementById("email").value = usuario.email;
+					document.getElementById("dataNascimento").value =
+						usuario.data_Nascimento?.split("T")?.[0] || "";
+				} else {
+					document.getElementById("modalTitulo").innerText = "Novo Usuário";
+					editandoId = null;
+					limparCampos();
+				}
+			}
+
+			function fecharModal() {
+				modal.classList.add("hidden");
+			}
+
+			function limparCampos() {
+				document
+					.querySelectorAll("#usuarioModal input")
+					.forEach((i) => (i.value = ""));
+			}
+
+			// Carregar usuários
+			async function carregarUsuarios() {
+				const res = await fetch(API_URL);
+				const dados = await res.json();
+
+				tabela.innerHTML = "";
+
+				dados.forEach((u) => {
+					const linha = document.createElement("tr");
+					linha.innerHTML = `
+          <td class="actions">
+            <button class="edit-btn" data-id="${u.id}">✏️</button>
+            <button class="delete-btn" data-id="${u.id}">🗑️</button>
+          </td>
+          <td>${u.id}</td>
+          <td>${u.nome}</td>
+          <td>${u.cpf}</td>
+          <td>${u.area}</td>
+          <td>${u.email}</td>
+        `;
+					tabela.appendChild(linha);
+				});
+
+				adicionarListenersAcoes();
+			}
+
+			function adicionarListenersAcoes() {
+				document.querySelectorAll(".edit-btn").forEach((btn) => {
+					btn.onclick = async () => {
+						const id = btn.getAttribute("data-id");
+						const res = await fetch(`${API_URL}/${id}`);
+						const usuario = await res.json();
+						abrirModal(usuario);
+					};
+				});
+
+				document.querySelectorAll(".delete-btn").forEach((btn) => {
+					btn.onclick = async () => {
+						const id = btn.getAttribute("data-id");
+						if (confirm("Deseja excluir este usuário?")) {
+							await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+							carregarUsuarios();
+						}
+					};
+				});
+			}
+
+			// Salvar usuário
+			salvarBtn.onclick = async () => {
+				const usuario = {
+					nome: document.getElementById("nome").value,
+					cpf: document.getElementById("cpf").value,
+					area: document.getElementById("area").value,
+					endereco: document.getElementById("endereco").value,
+					telefone: document.getElementById("telefone").value,
+					email: document.getElementById("email").value,
+					data_Nascimento: document.getElementById("dataNascimento").value,
+				};
+
+				if (editandoId) {
+					await fetch(`${API_URL}/${editandoId}`, {
+						method: "PUT",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(usuario),
+					});
+				} else {
+					await fetch(API_URL, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(usuario),
+					});
+				}
+
+				fecharModal();
+				carregarUsuarios();
+			};
+
+			// Inicializar
+			carregarUsuarios();
+		</script>
 	</body>
 </html>

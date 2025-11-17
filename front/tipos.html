@@ -1,5 +1,163 @@
-<html>
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Gerenciar Tipos</title>
+		<link rel="stylesheet" href="./styles/tipos.css" />
+	</head>
+
 	<body>
-		<h1>tipos</h1>
+		<div class="layout">
+			<!-- Sidebar -->
+			<aside class="sidebar">
+				<h2>Inventário</h2>
+				<nav>
+					<a href="index.html">Dashboard</a>
+					<a href="itens.html">Itens</a>
+					<a href="usuarios.html">Usuários</a>
+					<a class="active" href="tipos.html">Tipos</a>
+					<a href="requisicoes.html">Requisições</a>
+				</nav>
+			</aside>
+
+			<!-- Conteúdo principal -->
+			<main class="content">
+				<header>
+					<h1>Tipos de Requisição</h1>
+					<button class="primary-btn" id="btnNovoTipo">+ Novo Tipo</button>
+				</header>
+
+				<table class="table" id="tiposTable">
+					<thead>
+						<tr>
+							<th>Ações</th>
+							<th>ID</th>
+							<th>Descrição</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</main>
+		</div>
+
+		<!-- Modal -->
+		<div class="modal hidden" id="tipoModal">
+			<div class="modal-content">
+				<h2 id="modalTitulo">Novo Tipo</h2>
+
+				<input type="text" id="descricao" placeholder="Descrição" />
+
+				<div class="modal-actions">
+					<button class="secondary-btn" id="cancelarBtn">Cancelar</button>
+					<button class="primary-btn" id="salvarBtn">Salvar</button>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			const API_URL = "http://localhost:5116/api/Tipos";
+
+			const modal = document.getElementById("tipoModal");
+			const btnNovoTipo = document.getElementById("btnNovoTipo");
+			const cancelarBtn = document.getElementById("cancelarBtn");
+			const salvarBtn = document.getElementById("salvarBtn");
+			const tabela = document.querySelector("#tiposTable tbody");
+
+			let editandoId = null;
+
+			// Abrir modal
+			btnNovoTipo.onclick = () => abrirModal();
+			cancelarBtn.onclick = () => fecharModal();
+
+			function abrirModal(tipo = null) {
+				modal.classList.remove("hidden");
+
+				if (tipo) {
+					document.getElementById("modalTitulo").innerText = "Editar Tipo";
+					editandoId = tipo.id;
+					document.getElementById("descricao").value = tipo.descricao;
+				} else {
+					document.getElementById("modalTitulo").innerText = "Novo Tipo";
+					editandoId = null;
+					document.getElementById("descricao").value = "";
+				}
+			}
+
+			function fecharModal() {
+				modal.classList.add("hidden");
+			}
+
+			// Listar tipos
+			async function carregarTipos() {
+				const res = await fetch(API_URL);
+				const dados = await res.json();
+
+				tabela.innerHTML = "";
+
+				dados.forEach((t) => {
+					const linha = document.createElement("tr");
+					linha.innerHTML = `
+          <td class="actions">
+            <button class="edit-btn" data-id="${t.id}">✏️</button>
+            <button class="delete-btn" data-id="${t.id}">🗑️</button>
+          </td>
+            <td>${t.id}</td>
+            <td>${t.nome}</td>
+          `;
+					tabela.appendChild(linha);
+				});
+
+				addListeners();
+			}
+
+			function addListeners() {
+				document.querySelectorAll(".edit-btn").forEach((btn) => {
+					btn.onclick = async () => {
+						const id = btn.getAttribute("data-id");
+						const res = await fetch(`${API_URL}/${id}`);
+						const tipo = await res.json();
+						abrirModal(tipo);
+					};
+				});
+
+				document.querySelectorAll(".delete-btn").forEach((btn) => {
+					btn.onclick = async () => {
+						const id = btn.getAttribute("data-id");
+						if (confirm("Deseja excluir este tipo?")) {
+							await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+							carregarTipos();
+						}
+					};
+				});
+			}
+
+			// Salvar
+			salvarBtn.onclick = async () => {
+				const tipo = {
+					descricao: document.getElementById("descricao").value,
+				};
+
+				if (editandoId) {
+					await fetch(`${API_URL}/${editandoId}`, {
+						method: "PUT",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(tipo),
+					});
+				} else {
+					await fetch(API_URL, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(tipo),
+					});
+				}
+
+				fecharModal();
+				carregarTipos();
+			};
+
+			// Inicializar
+			carregarTipos();
+		</script>
 	</body>
 </html>
