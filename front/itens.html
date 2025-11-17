@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Itens - Inventário</title>
+		<link rel="stylesheet" href="./styles/itens.css" />
+	</head>
+	<body>
+		<div class="layout">
+			<aside class="sidebar">
+				<h2>Inventário</h2>
+				<nav>
+					<a href="index.html">Dashboard</a>
+					<a href="itens.html" class="active">Itens</a>
+					<a href="usuarios.html">Usuários</a>
+					<a href="tipos.html">Tipos</a>
+					<a href="requisicoes.html">Requisições</a>
+				</nav>
+			</aside>
+
+			<main class="content">
+				<header>
+					<h1>Itens</h1>
+				</header>
+
+				<button id="btnAdd" class="primary-btn">+ Novo Item</button>
+
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Ações</th>
+							<th>ID</th>
+							<th>Nome</th>
+							<th>Descrição</th>
+							<th>Valor</th>
+							<th>Tipo</th>
+						</tr>
+					</thead>
+					<tbody id="tabela-itens"></tbody>
+				</table>
+			</main>
+		</div>
+
+		<!-- Modal de Cadastro -->
+		<div id="modal" class="modal hidden" aria-hidden="true">
+			<div class="modal-content">
+				<h2 id="modal-title">Novo Item</h2>
+
+				<label for="nome">Nome:</label>
+				<input type="text" id="nome" name="nome" />
+
+				<label for="descricao">Descrição:</label>
+				<input type="text" id="descricao" name="descricao" />
+
+				<label for="valor">Valor:</label>
+				<input type="number" id="valor" name="valor" />
+
+				<label for="id_tipo">ID do Tipo:</label>
+				<input type="number" id="id_tipo" name="id_tipo" />
+
+				<div class="modal-actions">
+					<button id="salvar" class="primary-btn">Salvar</button>
+					<button id="fechar" class="secondary-btn">Cancelar</button>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			const apiUrl = "http://localhost:5116/api/Itens";
+
+			const tabela = document.getElementById("tabela-itens");
+			const modal = document.getElementById("modal");
+			const btnAdd = document.getElementById("btnAdd");
+			const btnSalvar = document.getElementById("salvar");
+			const btnFechar = document.getElementById("fechar");
+
+			let editId = null;
+
+			function abrirModal(editar = false, item = null) {
+				modal.classList.remove("hidden");
+				modal.setAttribute("aria-hidden", "false");
+				editId = editar ? item.id : null;
+
+				document.getElementById("modal-title").textContent = editar
+					? "Editar Item"
+					: "Novo Item";
+
+				document.getElementById("nome").value = editar ? item.nome : "";
+				document.getElementById("descricao").value = editar
+					? item.descricao
+					: "";
+				document.getElementById("valor").value = editar ? item.valor : "";
+				document.getElementById("id_tipo").value = editar ? item.iD_tipo : "";
+			}
+
+			function fecharModal() {
+				modal.classList.add("hidden");
+				modal.setAttribute("aria-hidden", "true");
+				editId = null;
+			}
+
+			async function carregarItens() {
+				try {
+					const res = await fetch(apiUrl);
+					const itens = await res.json();
+
+					tabela.innerHTML = "";
+
+					itens.forEach((item) => {
+						const tr = document.createElement("tr");
+						tr.innerHTML = `
+            <td class="actions">
+              <button class='btn-edit' data-id='${item.id}'>✏️</button>
+              <button class='btn-delete' data-id='${item.id}'>🗑️</button>
+            </td>
+            <td>${item.id}</td>
+            <td>${item.nome}</td>
+            <td>${item.descricao}</td>
+            <td>R$ ${item.valor}</td>
+            <td>${item.iD_tipo}</td>
+          `;
+						tabela.appendChild(tr);
+					});
+
+					// adicionar listeners aos botões recém-criados
+					document.querySelectorAll(".btn-edit").forEach((btn) => {
+						btn.addEventListener("click", async (e) => {
+							const id = e.currentTarget.dataset.id;
+							// buscar item pelo id para garantir dados atualizados
+							const res = await fetch(`${apiUrl}/${id}`);
+							const item = await res.json();
+							abrirModal(true, item);
+						});
+					});
+
+					document.querySelectorAll(".btn-delete").forEach((btn) => {
+						btn.addEventListener("click", (e) => {
+							const id = e.currentTarget.dataset.id;
+							deletarItem(id);
+						});
+					});
+				} catch (err) {
+					console.error("Erro ao carregar itens", err);
+				}
+			}
+
+			async function salvarItem() {
+				const item = {
+					nome: document.getElementById("nome").value,
+					descricao: document.getElementById("descricao").value,
+					valor: parseFloat(document.getElementById("valor").value) || 0,
+					iD_tipo: parseInt(document.getElementById("id_tipo").value) || 0,
+				};
+
+				try {
+					const metodo = editId ? "PUT" : "POST";
+					const url = editId ? `${apiUrl}/${editId}` : apiUrl;
+
+					await fetch(url, {
+						method: metodo,
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(item),
+					});
+
+					fecharModal();
+					carregarItens();
+				} catch (err) {
+					console.error("Erro ao salvar item", err);
+					alert("Ocorreu um erro ao salvar. Veja o console.");
+				}
+			}
+
+			async function deletarItem(id) {
+				if (!confirm("Tem certeza que deseja excluir?")) return;
+
+				try {
+					await fetch(`${apiUrl}/${id}`, { method: "DELETE" });
+					carregarItens();
+				} catch (err) {
+					console.error("Erro ao deletar", err);
+					alert("Erro ao deletar item.");
+				}
+			}
+
+			btnAdd.onclick = () => abrirModal();
+			btnFechar.onclick = fecharModal;
+			btnSalvar.onclick = salvarItem;
+
+			// fechar modal ao clicar no overlay
+			modal.addEventListener("click", (e) => {
+				if (e.target === modal) fecharModal();
+			});
+
+			carregarItens();
+		</script>
+	</body>
+</html>

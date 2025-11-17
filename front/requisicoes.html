@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Gerenciar Requisições</title>
+		<link rel="stylesheet" href="./styles/requisicoes.css" />
+	</head>
+
+	<body>
+		<div class="layout">
+			<!-- Sidebar -->
+			<aside class="sidebar">
+				<h2>Inventário</h2>
+				<nav>
+					<a href="index.html">Dashboard</a>
+					<a href="itens.html">Itens</a>
+					<a href="usuarios.html">Usuários</a>
+					<a href="tipos.html">Tipos</a>
+					<a class="active" href="requisicoes.html">Requisições</a>
+				</nav>
+			</aside>
+
+			<!-- Conteúdo principal -->
+			<main class="content">
+				<header>
+					<h1>Requisições</h1>
+					<button class="primary-btn" id="btnNovaRequisicao">
+						+ Nova Requisição
+					</button>
+				</header>
+
+				<table class="table" id="requisicoesTable">
+					<thead>
+						<tr>
+							<th>Ações</th>
+							<th>ID</th>
+							<th>Usuário</th>
+							<th>Item</th>
+							<th>Data da requisição</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</main>
+		</div>
+
+		<!-- Modal -->
+		<div class="modal hidden" id="requisicaoModal">
+			<div class="modal-content">
+				<h2 id="modalTitulo">Nova Requisição</h2>
+
+				<select id="usuarioSelect">
+					<option value="" disabled selected>Selecione o usuário</option>
+				</select>
+
+				<select id="itemSelect">
+					<option value="" disabled selected>Selecione o item</option>
+				</select>
+
+				<select id="tipoSelect">
+					<option value="" disabled selected>Selecione o tipo</option>
+				</select>
+
+				<input
+					type="date"
+					id="dataRequisicao"
+					placeholder="Data da Requisição" />
+
+				<div class="modal-actions">
+					<button class="secondary-btn" id="cancelarBtn">Cancelar</button>
+					<button class="primary-btn" id="salvarBtn">Salvar</button>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			const API_REQ = "http://localhost:5116/api/Requisicoes";
+			const API_USU = "http://localhost:5116/api/Usuarios";
+			const API_ITEM = "http://localhost:5116/api/Itens";
+			const API_TIPO = "http://localhost:5116/api/Tipos";
+
+			const modal = document.getElementById("requisicaoModal");
+			const btnNovaRequisicao = document.getElementById("btnNovaRequisicao");
+			const cancelarBtn = document.getElementById("cancelarBtn");
+			const salvarBtn = document.getElementById("salvarBtn");
+			const tabela = document.querySelector("#requisicoesTable tbody");
+
+			let editandoId = null;
+
+			btnNovaRequisicao.onclick = () => abrirModal();
+			cancelarBtn.onclick = () => fecharModal();
+
+			function abrirModal(requisicao = null) {
+				modal.classList.remove("hidden");
+
+				if (requisicao) {
+					document.getElementById("modalTitulo").innerText =
+						"Editar Requisição";
+					editandoId = requisicao.id;
+
+					document.getElementById("usuarioSelect").value = requisicao.usuarioId;
+					document.getElementById("itemSelect").value = requisicao.itemId;
+					document.getElementById("tipoSelect").value = requisicao.tipoId;
+					document.getElementById("dataRequisicao").value =
+						requisicao.data?.split("T")?.[0] || "";
+				} else {
+					document.getElementById("modalTitulo").innerText = "Nova Requisição";
+					editandoId = null;
+					document.getElementById("usuarioSelect").value = "";
+					document.getElementById("itemSelect").value = "";
+					document.getElementById("tipoSelect").value = "";
+					document.getElementById("dataRequisicao").value = "";
+				}
+			}
+
+			function fecharModal() {
+				modal.classList.add("hidden");
+			}
+
+			// Carregar opções do modal
+			async function carregarSelects() {
+				const usuarios = await (await fetch(API_USU)).json();
+				const itens = await (await fetch(API_ITEM)).json();
+				const tipos = await (await fetch(API_TIPO)).json();
+
+				document.getElementById("usuarioSelect").innerHTML =
+					"<option disabled selected>Selecione</option>" +
+					usuarios
+						.map((u) => `<option value="${u.id}">${u.nome}</option>`)
+						.join("");
+
+				document.getElementById("itemSelect").innerHTML =
+					"<option disabled selected>Selecione</option>" +
+					itens
+						.map((i) => `<option value="${i.id}">${i.nome}</option>`)
+						.join("");
+
+				document.getElementById("tipoSelect").innerHTML =
+					"<option disabled selected>Selecione</option>" +
+					tipos
+						.map((t) => `<option value="${t.id}">${t.descricao}</option>`)
+						.join("");
+			}
+
+			// Carregar requisições
+			async function carregarRequisicoes() {
+				const res = await fetch(API_REQ);
+				const dados = await res.json();
+
+				tabela.innerHTML = "";
+
+				dados.forEach((r) => {
+					const linha = document.createElement("tr");
+					linha.innerHTML = `
+          <td class="actions">
+            <button class="edit-btn" data-id="${r.id}">✏️</button>
+            <button class="delete-btn" data-id="${r.id}">🗑️</button>
+          </td>
+          <td>${r.id}</td>
+          <td>${r.iD_usuario}</td>
+          <td>${r.iD_item}</td>
+          <td>${r.dataRequisicao?.split("T")[0]}</td>
+        `;
+					tabela.appendChild(linha);
+				});
+
+				addListeners();
+			}
+
+			function addListeners() {
+				document.querySelectorAll(".edit-btn").forEach((btn) => {
+					btn.onclick = async () => {
+						const id = btn.getAttribute("data-id");
+						const res = await fetch(`${API_REQ}/${id}`);
+						const requisicao = await res.json();
+						abrirModal(requisicao);
+					};
+				});
+
+				document.querySelectorAll(".delete-btn").forEach((btn) => {
+					btn.onclick = async () => {
+						const id = btn.getAttribute("data-id");
+						if (confirm("Deseja excluir?")) {
+							await fetch(`${API_REQ}/${id}`, { method: "DELETE" });
+							carregarRequisicoes();
+						}
+					};
+				});
+			}
+
+			// Criar ou editar
+			salvarBtn.onclick = async () => {
+				const req = {
+					usuarioId: document.getElementById("usuarioSelect").value,
+					itemId: document.getElementById("itemSelect").value,
+					tipoId: document.getElementById("tipoSelect").value,
+					data: document.getElementById("dataRequisicao").value,
+				};
+
+				if (editandoId) {
+					await fetch(`${API_REQ}/${editandoId}`, {
+						method: "PUT",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(req),
+					});
+				} else {
+					await fetch(API_REQ, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(req),
+					});
+				}
+
+				fecharModal();
+				carregarRequisicoes();
+			};
+
+			// Inicialização
+			carregarSelects();
+			carregarRequisicoes();
+		</script>
+	</body>
+</html>

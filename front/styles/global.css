@@ -1,0 +1,83 @@
+:root {
+	--bg: #f5f5f5;
+	--sidebar-bg: #ffffff;
+	--text: #333;
+	--card-bg: #ffffff;
+	--border: #e0e0e0;
+	--primary: #4a6fa5;
+	--black: #111;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	font-family: Arial, sans-serif;
+	background: var(--bg);
+	color: var(--text);
+}
+
+.layout {
+	display: flex;
+	height: 100vh;
+}
+
+.sidebar {
+	width: 220px;
+	background: var(--sidebar-bg);
+	border-right: 1px solid var(--border);
+	padding: 20px;
+}
+
+.sidebar h2 {
+	margin-top: 0;
+	color: var(--black);
+	font-size: 22px;
+}
+
+.sidebar nav a {
+	display: block;
+	padding: 10px 0;
+	text-decoration: none;
+	color: var(--text);
+	font-size: 16px;
+}
+
+.sidebar nav a.active {
+	font-weight: bold;
+	color: var(--black);
+}
+
+.content {
+	flex: 1;
+	padding: 20px;
+}
+
+header h1 {
+	margin: 0;
+	margin-bottom: 20px;
+}
+
+.cards {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 20px;
+}
+
+.card {
+	background: var(--card-bg);
+	padding: 20px;
+	border-radius: 10px;
+	border: 1px solid var(--border);
+	text-align: center;
+}
+
+.card h3 {
+	margin: 0 0 10px 0;
+	font-size: 18px;
+}
+
+.card p {
+	font-size: 35px;
+	font-weight: bold;
+	color: var(--primary);
+}
